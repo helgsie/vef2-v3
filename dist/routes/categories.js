@@ -20,12 +20,16 @@ exports.categoryRoutes = categoryRoutes;
 // GET /categories - Get all categories
 categoryRoutes.get('/', (c) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const categories = yield index_1.prisma.category.findMany();
+        const categories = yield index_1.prisma.category.findMany({
+            include: {
+                questions: true
+            }
+        });
         return c.json(categories, 200);
     }
     catch (error) {
         console.error('Error fetching categories:', error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));
 // GET /categories/:slug - Get a specific category with its questions
@@ -43,7 +47,7 @@ categoryRoutes.get('/:slug', (c) => __awaiter(void 0, void 0, void 0, function* 
     }
     catch (error) {
         console.error(`Error fetching category ${slug}:`, error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));
 // POST /category - Create a new category
@@ -60,11 +64,11 @@ categoryRoutes.post('/', (0, zod_validator_1.zValidator)('json', schemas_1.categ
         const newCategory = yield index_1.prisma.category.create({
             data: body
         });
-        return c.json(newCategory, 200);
+        return c.json(newCategory, 201);
     }
     catch (error) {
         console.error('Error creating category:', error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));
 // PATCH /category/:slug - Update a category
@@ -96,7 +100,7 @@ categoryRoutes.patch('/:slug', (0, zod_validator_1.zValidator)('json', schemas_1
     }
     catch (error) {
         console.error(`Error updating category ${slug}:`, error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));
 // DELETE /category/:slug - Delete a category
@@ -118,6 +122,6 @@ categoryRoutes.delete('/:slug', (c) => __awaiter(void 0, void 0, void 0, functio
     }
     catch (error) {
         console.error(`Error deleting category ${slug}:`, error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));

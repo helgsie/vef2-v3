@@ -10,13 +10,15 @@ const categoryRoutes = new Hono();
 // GET /categories - Get all categories
 categoryRoutes.get('/', async (c) => {
   try {
-    const categories: Category[] = await prisma.category.findMany({
-        include: { questions: true }
+    const categories = await prisma.category.findMany({
+        include: { 
+          questions: true 
+        }
     });
     return c.json(categories, 200);
   } catch (error) {
     console.error('Error fetching categories:', error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
@@ -25,7 +27,7 @@ categoryRoutes.get('/:slug', async (c) => {
   const slug = c.req.param('slug');
   
   try {
-    const category: Category | null = await prisma.category.findUnique({
+    const category = await prisma.category.findUnique({
       where: { slug },
       include: { questions: true }
     });
@@ -37,7 +39,7 @@ categoryRoutes.get('/:slug', async (c) => {
     return c.json(category, 200);
   } catch (error) {
     console.error(`Error fetching category ${slug}:`, error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
@@ -59,10 +61,10 @@ categoryRoutes.post('/', zValidator('json', categorySchema), async (c) => {
       data: body
     });
     
-    return c.json(newCategory, 200);
+    return c.json(newCategory, 201);
   } catch (error) {
     console.error('Error creating category:', error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
@@ -100,7 +102,7 @@ categoryRoutes.patch('/:slug', zValidator('json', categorySchema.partial()), asy
     return c.json(updatedCategory, 200);
   } catch (error) {
     console.error(`Error updating category ${slug}:`, error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
@@ -126,7 +128,7 @@ categoryRoutes.delete('/:slug', async (c) => {
     return c.body(null, 204);
   } catch (error) {
     console.error(`Error deleting category ${slug}:`, error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
 

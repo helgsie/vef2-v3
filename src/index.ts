@@ -5,6 +5,8 @@ import { PrismaClient } from '@prisma/client';
 import { categoryRoutes } from './routes/categories';
 import { questionRoutes } from './routes/questions';
 import { cors } from 'hono/cors';
+import process from "node:process";
+import { serve } from "@hono/node-server";
 
 // Create a new Prisma client
 export const prisma = new PrismaClient();
@@ -39,19 +41,29 @@ app.use('*', async (c, next) => {
 
 // Routes
 app.route('/categories', categoryRoutes);
-app.route('/category', categoryRoutes);
 app.route('/questions', questionRoutes);
 
 // 404 handler
-app.notFound((c) => {
+/*app.notFound((c) => {
   return c.json({ error: 'Not Found' }, 404);
-});
+});*/
 
-// Start the server
-const port = parseInt(process.env.PORT || '3000', 10);
-console.log(`Server is running on port ${port}`);
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
 
-export default {
-  port,
-  fetch: app.fetch
-};
+serve(
+  {
+    fetch: app.fetch,
+    port: PORT,
+    hostname: HOST,
+  },
+  () => {
+    console.log(
+      `Server running on ${
+        process.env.NODE_ENV === "production"
+          ? "https://vef2-v3-thb0.onrender.com"
+          : `http://${HOST}:${PORT}`
+      }`,
+    );
+  },
+);
