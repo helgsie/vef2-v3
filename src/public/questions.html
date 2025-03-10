@@ -7,23 +7,35 @@
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>Spurningaflokkur</h1>
-    <div class="category-page">
-        <div class="category-questions" id="category-questions">
-            <!-- Categories will be dynamically injected here -->
+    <main id="main">
+        <header class="header">
+            <div class="quiz-header">
+                <a href="/" class="back-button"><p><</p></a>
+                <h1 class="quiz-title">Spurningar</h1>
+            </div>
+        </header>
+        <div class="category-page">
+            <div class="question-stack">
+                <div class="category-questions" id="category-questions">
+                    <!-- Categories will be dynamically injected here -->
+                </div>
+            </div>
+            <div class="question-button-menu">
+                <a href="/form" class="add-question-button">Bæta við spurningu</a>
+            </div>
         </div>
-        <div class="question-button-menu">
-            <a href="/form" class="add-question-button">Bæta við spurningu</a>
-        </div>
-    </div>
+        <footer>
+            <p class="footer-text">verkefni 2 í vefforritun 2</p>  
+        </footer>
+    </main>
     <script>
         document.addEventListener("DOMContentLoaded", async () => {
             const categoryQuestions = document.getElementById("category-questions");
 
-            const categorySlug = window.location.pathname.split('/').pop();
+            const categorySlug = window.location.pathname.split('/').filter(Boolean).pop();
 
             try {
-                const response = await fetch(`/categories/${categorySlug}`);
+                const response = await fetch(`/api/categories/${categorySlug}`);
                 if (!response.ok) {
                     throw new Error("Failed to fetch category data");
                 }
@@ -33,27 +45,29 @@
                 console.log(categoryData);
 
                 if (categoryData && categoryData.questions) {
-                    categoryQuestions.innerHTML = `
-                                <h2>${categoryData.title}</h2>
-                                <ul class="question">
-                                ${categoryData.questions.map(q => `
-                                    <li>
-                                        <p><strong>Q: ${q.question}</strong></p>
-                                        <ul>
-                                            ${q.answers.map(a => `
-                                            <li>${a.answer} ${a.correct ? '<span class="checkmark">(Correct)</span>' : ''}</li>
-                                            `).join('')}
-                                        </ul>
-                                    </li>
-                                `).join('')}
-                                </ul>
-                            `;
+                    categoryQuestions.innerHTML = categoryData.questions.map((q, question_index) => `
+                        <div class="question-answer-pair">
+                            <h2 class="question">${question_index + 1}. ${q.questionText}</h2>
+                            ${q.answers.map((a, answer_index) => `
+                                <label class="radio-container">
+                                    <input
+                                        name="question-${question_index}"
+                                        type="radio"
+                                        value="${a.answer}"
+                                        data-correct="${a.isCorrect ? 'true' : 'false'}"
+                                    />
+                                    ${a.answer}
+                                    <span class="checkmark"></span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    `).join('');
                 } else {
                     throw new Error("Category data format is invalid");
                 }
             } catch (error) {
                 console.error("Error:", error);
-                categoryQuestions.innerHTML = "<li>Error loading questions.</li>";
+                categoryQuestions.innerHTML = `<li>${error.message}</li>`;
             }
         });
     </script>

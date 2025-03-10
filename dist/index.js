@@ -1,33 +1,179 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.app = exports.prisma = void 0;
 // src/index.ts
-const hono_1 = require("hono");
-const client_1 = require("@prisma/client");
-const categories_1 = require("./routes/categories");
-const questions_1 = require("./routes/questions");
-const node_process_1 = __importDefault(require("node:process"));
-const node_server_1 = require("@hono/node-server");
-const cors_1 = require("hono/cors");
-const serve_static_1 = require("@hono/node-server/serve-static");
-exports.prisma = new client_1.PrismaClient();
-exports.app = new hono_1.Hono();
-exports.app.use('/*', (0, cors_1.cors)());
-exports.app.use('/static/*', (0, serve_static_1.serveStatic)({ root: './' }));
-exports.app.use('/', (0, serve_static_1.serveStatic)({ path: './public/index.html' }));
-exports.app.route('/categories', categories_1.categoryRoutes);
-exports.app.route('/questions', questions_1.questionRoutes);
-const PORT = node_process_1.default.env.PORT ? Number(node_process_1.default.env.PORT) : 3000;
-const HOST = node_process_1.default.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
-(0, node_server_1.serve)({
-    fetch: exports.app.fetch,
+import { Hono } from 'hono';
+import { PrismaClient } from '@prisma/client';
+import process from "node:process";
+import { serve } from "@hono/node-server";
+import { cors } from 'hono/cors';
+import path from 'node:path';
+import fs from 'node:fs';
+const __dirname = new URL('.', import.meta.url).pathname;
+export const prisma = new PrismaClient();
+export const app = new Hono();
+const serveStaticFile = (filePath, c) => {
+    try {
+        const ext = path.extname(filePath);
+        const contentType = {
+            '.html': 'text/html',
+            '.js': 'application/javascript',
+            '.css': 'text/css',
+        }[ext] || 'text/plain';
+        if (fs.existsSync(filePath)) {
+            const file = fs.readFileSync(filePath);
+            return c.body(file, 200, { 'Content-Type': contentType });
+        }
+        else {
+            console.error('File not found:', filePath);
+            return c.body('File not found', 404);
+        }
+    }
+    catch (error) {
+        console.error('Error serving file:', error instanceof Error ? error.message : error);
+        return c.body('Internal server error', 500);
+    }
+};
+app.use('/*', cors());
+app.get('/static/*', (c) => {
+    const url = new URL(c.req.url);
+    const filePath = path.join(__dirname, 'public', url.pathname.slice(7));
+    return serveStaticFile(filePath, c);
+});
+app.get('/', (c) => {
+    const indexFile = path.join(__dirname, 'public', 'index.html');
+    return serveStaticFile(indexFile, c);
+});
+app.get('/form', (c) => {
+    const formFile = path.join(__dirname, 'public', 'form.html');
+    return serveStaticFile(formFile, c);
+});
+app.get('/categories', (c) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const categories = yield prisma.category.findMany();
+        return c.json(categories);
+    }
+    catch (error) {
+        console.error('Error fetching categories:', error);
+        return c.body('Internal server error', 500);
+    }
+}));
+app.get('/categories/:slug', (c) => {
+    const { slug } = c.req.param();
+    const formFile = path.join(__dirname, 'public', 'questions.html');
+    return serveStaticFile(formFile, c);
+});
+/*app.get('/categories/:slug', async (c) => {
+  const { slug } = c.req.param();
+
+  try {
+    const category = await prisma.category.findUnique({
+      where: {
+        slug: slug,
+      },
+      include: {
+        questions: {
+          include: {
+            answers: true,
+          },
+        },
+      },
+    });
+
+    if (!category) {
+      return c.body('Category not found', 404);
+    }
+
+    return c.json(category);
+  } catch (error) {
+    console.error('Error fetching category data:', error);
+    return c.body('Internal server error', 500);
+  }
+});*/
+/*app.get('/categories/:slug', async (c) => {
+  const { slug } = c.req.param();
+  try {
+    const category = await prisma.category.findUnique({
+      where: {
+        slug: slug,
+      },
+      include: {
+        questions: {
+          include: {
+            answers: true,
+          },
+        },
+      },
+    });
+
+    if (!category) {
+      return c.body('Category not found', 404);
+    }
+
+    // Now we render the HTML dynamically with the category data
+    let html = `
+    <html lang="is">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${category.name}</title>
+        <link rel="stylesheet" href="/static/styles.css">
+    </head>
+    <body>
+        <h1>${category.name}</h1>
+        <div class="category-questions">
+    `;
+
+    // Iterate through the questions and answers to generate HTML content
+    category.questions.forEach((question) => {
+      html += `
+        <div class="question-answer-pair">
+            <p><strong>Q: ${question.questionText}</strong></p>
+            <ul>
+      `;
+
+      question.answers.forEach((answer) => {
+        html += `
+          <li>${answer.answer} ${answer.isCorrect ? '<span class="checkmark">(Correct)</span>' : ''}</li>
+        `;
+      });
+
+      html += `
+            </ul>
+        </div>
+      `;
+    });
+
+    // Close the remaining HTML structure
+    html += `
+        </div>
+        <div class="question-button-menu">
+            <a href="/form" class="add-question-button">Bæta við spurningu</a>
+        </div>
+    </body>
+    </html>
+    `;
+
+    return c.body(html);
+  } catch (error) {
+    console.error('Error fetching category data:', error);
+    return c.body('Internal server error', 500);
+  }
+});*/
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
+const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
+serve({
+    fetch: app.fetch,
     port: PORT !== null && PORT !== void 0 ? PORT : 3000,
     hostname: HOST,
 }, (info) => {
-    console.log(`Server running on ${node_process_1.default.env.NODE_ENV === "production"
+    console.log(`Server running on ${process.env.NODE_ENV === "production"
         ? "https://vef2-v3-thb0.onrender.com"
         : `http://${HOST}:${info.port}`}`);
 });

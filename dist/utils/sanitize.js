@@ -1,15 +1,8 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sanitizeInput = sanitizeInput;
-exports.sanitizeObject = sanitizeObject;
-const xss_1 = __importDefault(require("xss"));
-function sanitizeInput(input) {
-    return (0, xss_1.default)(input);
+import xss from 'xss';
+export function sanitizeInput(input) {
+    return xss(input);
 }
-function sanitizeObject(obj) {
+export function sanitizeObject(obj) {
     const sanitized = Object.assign({}, obj);
     for (const key in sanitized) {
         if (typeof sanitized[key] === 'string') {

@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,19 +7,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.questionRoutes = void 0;
 // src/routes/questions.ts
-const hono_1 = require("hono");
-const zod_validator_1 = require("@hono/zod-validator");
-const index_1 = require("../index");
-const schemas_1 = require("../validation/schemas");
-const questionRoutes = new hono_1.Hono();
-exports.questionRoutes = questionRoutes;
+import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { prisma } from '../index.js';
+import { questionSchema, questionWithAnswersSchema, answerSchema } from '../validation/schemas.js';
+const questionRoutes = new Hono();
 // GET /questions - Sækja allar spurningar
 questionRoutes.get('/', (c) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const questions = yield index_1.prisma.question.findMany({
+        const questions = yield prisma.question.findMany({
             include: {
                 category: true,
                 answers: true
@@ -40,7 +36,7 @@ questionRoutes.get('/:id', (c) => __awaiter(void 0, void 0, void 0, function* ()
         return c.json({ error: 'Invalid question ID' }, 400);
     }
     try {
-        const question = yield index_1.prisma.question.findUnique({
+        const question = yield prisma.question.findUnique({
             where: { id },
             include: {
                 category: true,
@@ -58,18 +54,18 @@ questionRoutes.get('/:id', (c) => __awaiter(void 0, void 0, void 0, function* ()
     }
 }));
 // POST /questions - Búa til nýja spurningu með svör
-questionRoutes.post('/', (0, zod_validator_1.zValidator)('json', schemas_1.questionWithAnswersSchema), (c) => __awaiter(void 0, void 0, void 0, function* () {
+questionRoutes.post('/', zValidator('json', questionWithAnswersSchema), (c) => __awaiter(void 0, void 0, void 0, function* () {
     const body = yield c.req.json();
     try {
         // Athuga hvort flokkur sé til
-        const category = yield index_1.prisma.category.findUnique({
+        const category = yield prisma.category.findUnique({
             where: { id: body.categoryId }
         });
         if (!category) {
             return c.json({ error: 'Category not found' }, 400);
         }
         // Create question and answers in a transaction
-        const newQuestion = yield index_1.prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        const newQuestion = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             const question = yield tx.question.create({
                 data: {
                     questionText: body.questionText,
@@ -94,7 +90,7 @@ questionRoutes.post('/', (0, zod_validator_1.zValidator)('json', schemas_1.quest
     }
 }));
 // PATCH /questions/:id - Uppfæra spurningu
-questionRoutes.patch('/:id', (0, zod_validator_1.zValidator)('json', schemas_1.questionSchema.partial()), (c) => __awaiter(void 0, void 0, void 0, function* () {
+questionRoutes.patch('/:id', zValidator('json', questionSchema.partial()), (c) => __awaiter(void 0, void 0, void 0, function* () {
     const id = parseInt(c.req.param('id'), 10);
     if (isNaN(id)) {
         return c.json({ error: 'Invalid question ID' }, 400);
@@ -102,7 +98,7 @@ questionRoutes.patch('/:id', (0, zod_validator_1.zValidator)('json', schemas_1.q
     const body = yield c.req.json();
     try {
         // Check if the question exists
-        const existingQuestion = yield index_1.prisma.question.findUnique({
+        const existingQuestion = yield prisma.question.findUnique({
             where: { id }
         });
         if (!existingQuestion) {
@@ -110,14 +106,14 @@ questionRoutes.patch('/:id', (0, zod_validator_1.zValidator)('json', schemas_1.q
         }
         // If updating the category, check that it exists
         if (body.categoryId) {
-            const category = yield index_1.prisma.category.findUnique({
+            const category = yield prisma.category.findUnique({
                 where: { id: body.categoryId }
             });
             if (!category) {
                 return c.json({ error: 'Category not found' }, 400);
             }
         }
-        const updatedQuestion = yield index_1.prisma.question.update({
+        const updatedQuestion = yield prisma.question.update({
             where: { id },
             data: body,
             include: {
@@ -140,14 +136,14 @@ questionRoutes.delete('/:id', (c) => __awaiter(void 0, void 0, void 0, function*
     }
     try {
         // Check if the question exists
-        const existingQuestion = yield index_1.prisma.question.findUnique({
+        const existingQuestion = yield prisma.question.findUnique({
             where: { id }
         });
         if (!existingQuestion) {
             return c.json({ error: 'Question not found' }, 404);
         }
         // Delete the question (answers will be deleted due to cascade delete)
-        yield index_1.prisma.question.delete({
+        yield prisma.question.delete({
             where: { id }
         });
         return c.body(null, 204);
@@ -158,7 +154,7 @@ questionRoutes.delete('/:id', (c) => __awaiter(void 0, void 0, void 0, function*
     }
 }));
 // POST /questions/:id/answers - Add an answer to a question
-questionRoutes.post('/:id/answers', (0, zod_validator_1.zValidator)('json', schemas_1.answerSchema), (c) => __awaiter(void 0, void 0, void 0, function* () {
+questionRoutes.post('/:id/answers', zValidator('json', answerSchema), (c) => __awaiter(void 0, void 0, void 0, function* () {
     const questionId = parseInt(c.req.param('id'), 10);
     if (isNaN(questionId)) {
         return c.json({ error: 'Invalid question ID' }, 400);
@@ -166,13 +162,13 @@ questionRoutes.post('/:id/answers', (0, zod_validator_1.zValidator)('json', sche
     const body = yield c.req.json();
     try {
         // Check if the question exists
-        const question = yield index_1.prisma.question.findUnique({
+        const question = yield prisma.question.findUnique({
             where: { id: questionId }
         });
         if (!question) {
             return c.json({ error: 'Question not found' }, 404);
         }
-        const newAnswer = yield index_1.prisma.answer.create({
+        const newAnswer = yield prisma.answer.create({
             data: {
                 answer: body.answer,
                 isCorrect: body.isCorrect,
@@ -186,3 +182,4 @@ questionRoutes.post('/:id/answers', (0, zod_validator_1.zValidator)('json', sche
         throw error;
     }
 }));
+export { questionRoutes };

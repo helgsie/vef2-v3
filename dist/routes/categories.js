@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,19 +7,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.categoryRoutes = void 0;
 // src/routes/categories.ts
-const hono_1 = require("hono");
-const zod_validator_1 = require("@hono/zod-validator");
-const index_1 = require("../index");
-const schemas_1 = require("../validation/schemas");
-const categoryRoutes = new hono_1.Hono();
-exports.categoryRoutes = categoryRoutes;
+import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { prisma } from '../index.js';
+import { categorySchema } from '../validation/schemas.js';
+const categoryRoutes = new Hono();
 // GET /categories - Get all categories
 categoryRoutes.get('/', (c) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const categories = yield index_1.prisma.category.findMany();
+        const categories = yield prisma.category.findMany();
         return c.json(categories, 200);
     }
     catch (error) {
@@ -29,10 +25,10 @@ categoryRoutes.get('/', (c) => __awaiter(void 0, void 0, void 0, function* () {
     }
 }));
 // GET /categories/:slug - Get a specific category with its questions
-categoryRoutes.get('/:slug', (c) => __awaiter(void 0, void 0, void 0, function* () {
+categoryRoutes.get('/categories/:slug', (c) => __awaiter(void 0, void 0, void 0, function* () {
     const slug = c.req.param('slug');
     try {
-        const category = yield index_1.prisma.category.findUnique({
+        const category = yield prisma.category.findUnique({
             where: { slug },
             include: { questions: true }
         });
@@ -47,17 +43,17 @@ categoryRoutes.get('/:slug', (c) => __awaiter(void 0, void 0, void 0, function* 
     }
 }));
 // POST /category - Create a new category
-categoryRoutes.post('/', (0, zod_validator_1.zValidator)('json', schemas_1.categorySchema), (c) => __awaiter(void 0, void 0, void 0, function* () {
+categoryRoutes.post('/', zValidator('json', categorySchema), (c) => __awaiter(void 0, void 0, void 0, function* () {
     const body = yield c.req.json();
     try {
         // Check if a category with the same slug already exists
-        const existingCategory = yield index_1.prisma.category.findUnique({
+        const existingCategory = yield prisma.category.findUnique({
             where: { slug: body.slug }
         });
         if (existingCategory) {
             return c.json({ error: 'A category with this slug already exists' }, 400);
         }
-        const newCategory = yield index_1.prisma.category.create({
+        const newCategory = yield prisma.category.create({
             data: body
         });
         return c.json(newCategory, 201);
@@ -68,12 +64,12 @@ categoryRoutes.post('/', (0, zod_validator_1.zValidator)('json', schemas_1.categ
     }
 }));
 // PATCH /category/:slug - Update a category
-categoryRoutes.patch('/:slug', (0, zod_validator_1.zValidator)('json', schemas_1.categorySchema.partial()), (c) => __awaiter(void 0, void 0, void 0, function* () {
+categoryRoutes.patch('/:slug', zValidator('json', categorySchema.partial()), (c) => __awaiter(void 0, void 0, void 0, function* () {
     const slug = c.req.param('slug');
     const body = yield c.req.json();
     try {
         // Check if the category exists
-        const existingCategory = yield index_1.prisma.category.findUnique({
+        const existingCategory = yield prisma.category.findUnique({
             where: { slug }
         });
         if (!existingCategory) {
@@ -81,14 +77,14 @@ categoryRoutes.patch('/:slug', (0, zod_validator_1.zValidator)('json', schemas_1
         }
         // If we're updating the slug, check that the new slug doesn't already exist
         if (body.slug && body.slug !== slug) {
-            const categoryWithNewSlug = yield index_1.prisma.category.findUnique({
+            const categoryWithNewSlug = yield prisma.category.findUnique({
                 where: { slug: body.slug }
             });
             if (categoryWithNewSlug) {
                 return c.json({ error: 'A category with this slug already exists' }, 400);
             }
         }
-        const updatedCategory = yield index_1.prisma.category.update({
+        const updatedCategory = yield prisma.category.update({
             where: { slug },
             data: body
         });
@@ -104,14 +100,14 @@ categoryRoutes.delete('/:slug', (c) => __awaiter(void 0, void 0, void 0, functio
     const slug = c.req.param('slug');
     try {
         // Check if the category exists
-        const existingCategory = yield index_1.prisma.category.findUnique({
+        const existingCategory = yield prisma.category.findUnique({
             where: { slug }
         });
         if (!existingCategory) {
             return c.json({ error: 'Category not found' }, 404);
         }
         // Delete the category
-        yield index_1.prisma.category.delete({
+        yield prisma.category.delete({
             where: { slug }
         });
         return c.body(null, 204);
@@ -121,3 +117,4 @@ categoryRoutes.delete('/:slug', (c) => __awaiter(void 0, void 0, void 0, functio
         return c.json({ error: 'Internal server error' }, 500);
     }
 }));
+export { categoryRoutes };
