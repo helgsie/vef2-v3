@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spurningaflokkur</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h1>Spurningaflokkur</h1>
+    <div class="category-page">
+        <div class="category-questions" id="category-questions">
+            <!-- Categories will be dynamically injected here -->
+        </div>
+        <div class="question-button-menu">
+            <a href="/form" class="add-question-button">Bæta við spurningu</a>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const categoryQuestions = document.getElementById("category-questions");
+
+            const categorySlug = window.location.pathname.split('/').pop();
+
+            try {
+                const response = await fetch(`/categories/${categorySlug}`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch category data");
+                }
+
+                const categoryData = await response.json();
+
+                console.log(categoryData);
+
+                if (categoryData && categoryData.questions) {
+                    categoryQuestions.innerHTML = `
+                                <h2>${categoryData.title}</h2>
+                                <ul class="question">
+                                ${categoryData.questions.map(q => `
+                                    <li>
+                                        <p><strong>Q: ${q.question}</strong></p>
+                                        <ul>
+                                            ${q.answers.map(a => `
+                                            <li>${a.answer} ${a.correct ? '<span class="checkmark">(Correct)</span>' : ''}</li>
+                                            `).join('')}
+                                        </ul>
+                                    </li>
+                                `).join('')}
+                                </ul>
+                            `;
+                } else {
+                    throw new Error("Category data format is invalid");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                categoryQuestions.innerHTML = "<li>Error loading questions.</li>";
+            }
+        });
+    </script>
+</body>
+</html>

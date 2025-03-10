@@ -20,11 +20,7 @@ exports.categoryRoutes = categoryRoutes;
 // GET /categories - Get all categories
 categoryRoutes.get('/', (c) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const categories = yield index_1.prisma.category.findMany({
-            include: {
-                questions: true
-            }
-        });
+        const categories = yield index_1.prisma.category.findMany();
         return c.json(categories, 200);
     }
     catch (error) {

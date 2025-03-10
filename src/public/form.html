@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spurningaleikur</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <main id="main">
+        <header class="header">
+            <div class="quiz-header">
+                <a href="/" class="back-button"><p><</p></a>
+                <h1 class="quiz-title">Spurningar</h1>
+            </div>
+        </header>
+        <form class="form" method="post" action="/form">
+            <!-- Flokkaval -->
+            <div class="flokkaval">
+                <label for="spurningaflokkur">Veldu spurningaflokk</label>
+                <select id="spurningaflokkur" name="spurningaflokkur">
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="javascript">Javascript</option>
+                </select>
+            </div>
+            
+            <!-- Spurning -->
+            <div class="spurning">
+                <label for="name">Spurning</label>
+                <textarea id="question-input" name="name" rows="5" placeholder="Sláðu inn spurningu..." required></textarea>
+            </div>
+            
+            <!-- Svarmöguleikar -->
+            <div class="svarmoguleikar">
+                <label for="answers">Svarmöguleikar</label>
+                <div id="answers" class="answers">
+                <input type="text" name="svar-texti" class="svar-texti" placeholder="Sláðu inn svar..." required>
+                <input type="radio" name="rett_svar" value="0" class="rett-radio"> Rétt?
+                </div>
+                <button type="button" id="add-answer" class="add-answer-button">+</button>
+            </div>
+            
+                <!-- Svartakki-->
+            <button class="form-button" type="submit">Bæta við</button>
+        </form>
+        <footer>
+            <p class="footer-text">verkefni 2 í vefforritun 2</p>  
+        </footer>
+    </main>
+</body>
+</html>

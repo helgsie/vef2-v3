@@ -2,8 +2,8 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { prisma } from '../index';
-import { questionSchema, questionWithAnswersSchema, answerSchema } from '../validation/schemas';
+import { prisma } from '../index.js';
+import { questionSchema, questionWithAnswersSchema, answerSchema } from '../validation/schemas.js';
 
 const questionRoutes = new Hono();
 

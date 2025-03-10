@@ -1,20 +1,16 @@
 // src/routes/categories.ts
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { prisma } from '../index';
-import { categorySchema } from '../validation/schemas';
-import { Category } from '../types';
+import { prisma } from '../index.js';
+import { categorySchema } from '../validation/schemas.js';
+import { Category } from '../types.js';
 
 const categoryRoutes = new Hono();
 
 // GET /categories - Get all categories
 categoryRoutes.get('/', async (c) => {
   try {
-    const categories = await prisma.category.findMany({
-        include: { 
-          questions: true 
-        }
-    });
+    const categories = await prisma.category.findMany();
     return c.json(categories, 200);
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -23,7 +19,7 @@ categoryRoutes.get('/', async (c) => {
 });
 
 // GET /categories/:slug - Get a specific category with its questions
-categoryRoutes.get('/:slug', async (c) => {
+categoryRoutes.get('/categories/:slug', async (c) => {
   const slug = c.req.param('slug');
   
   try {
