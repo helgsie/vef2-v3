@@ -2,10 +2,8 @@
 import { z } from 'zod';
 import xss from 'xss';
 
-// Sanitize string inputs
 const sanitizeString = (value: string): string => xss(value);
 
-// Category schema
 export const categorySchema = z.object({
   title: z
     .string()
@@ -18,7 +16,6 @@ export const categorySchema = z.object({
     .transform(sanitizeString)
 });
 
-// Answer schema for creating answers
 export const answerSchema = z.object({
   answer: z
     .string()
@@ -30,7 +27,6 @@ export const answerSchema = z.object({
     .default(false)
 });
 
-// Question schema
 export const questionSchema = z.object({
   questionText: z
     .string()
@@ -43,7 +39,6 @@ export const questionSchema = z.object({
     .positive('Númer flokks þarf að vera jákvæð heiltala')
 });
 
-// Schema for creating a question with answers
 export const questionWithAnswersSchema = questionSchema.extend({
   answers: z
     .array(answerSchema)

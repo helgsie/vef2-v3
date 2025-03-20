@@ -34,7 +34,10 @@ const serveStaticFile = (filePath: string, c: any) => {
   }
 };
 
-app.use('/*', cors())
+app.use('/*', cors({
+  origin: ['http://localhost:3000', 'https://vef2-v3-thb0.onrender.com'],
+  credentials: true,
+}))
 
 app.get('/static/*', (c) => {
   const url = new URL(c.req.url);
