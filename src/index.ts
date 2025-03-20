@@ -11,7 +11,7 @@ export const prisma = new PrismaClient();
 export const app = new Hono();
 app.use(prettyJSON());
 app.notFound((c) => c.json({ message: 'not found' }, 404));
-app.use('/*', cors({
+app.use(cors({
   origin: ['http://localhost:3000', 'https://vef2-v4-gjvc.onrender.com'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
@@ -19,7 +19,7 @@ app.use('/*', cors({
 }))
 app.route('/', api);
 app.options('*', (c) => {
-  return c.newResponse('', { status: 204 });
+  return c.newResponse(null, { status: 204 });
 });
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
