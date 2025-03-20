@@ -3,9 +3,8 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { prisma } from '../index.js';
 import { categorySchema } from '../validation/schemas.js';
-import { Category } from '../types.js';
 
-const categoryRoutes = new Hono();
+export const categoryRoutes = new Hono();
 
 // GET /categories - Get all categories
 categoryRoutes.get('/', async (c) => {
@@ -19,7 +18,7 @@ categoryRoutes.get('/', async (c) => {
 });
 
 // GET /categories/:slug - Get a specific category with its questions
-categoryRoutes.get('/categories/:slug', async (c) => {
+categoryRoutes.get('/:slug', async (c) => {
   const slug = c.req.param('slug');
   
   try {
@@ -127,5 +126,3 @@ categoryRoutes.delete('/:slug', async (c) => {
     return c.json({ error: 'Internal server error' }, 500);
   }
 });
-
-export { categoryRoutes };

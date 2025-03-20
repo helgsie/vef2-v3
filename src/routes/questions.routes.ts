@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { prisma } from '../index.js';
 import { questionSchema, questionWithAnswersSchema, answerSchema } from '../validation/schemas.js';
 
-const questionRoutes = new Hono();
+export const questionRoutes = new Hono();
 
 type Answer = z.infer<typeof answerSchema>;
 
@@ -213,5 +213,3 @@ questionRoutes.post('/:id/answers', zValidator('json', answerSchema), async (c) 
     throw error;
   }
 });
-
-export { questionRoutes };

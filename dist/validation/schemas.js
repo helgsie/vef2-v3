@@ -1,9 +1,7 @@
 // src/validation/schemas.ts
 import { z } from 'zod';
 import xss from 'xss';
-// Sanitize string inputs
 const sanitizeString = (value) => xss(value);
-// Category schema
 export const categorySchema = z.object({
     title: z
         .string()
@@ -15,7 +13,6 @@ export const categorySchema = z.object({
         .regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens')
         .transform(sanitizeString)
 });
-// Answer schema for creating answers
 export const answerSchema = z.object({
     answer: z
         .string()
@@ -26,7 +23,6 @@ export const answerSchema = z.object({
         .boolean()
         .default(false)
 });
-// Question schema
 export const questionSchema = z.object({
     questionText: z
         .string()
@@ -38,7 +34,6 @@ export const questionSchema = z.object({
         .int()
         .positive('Númer flokks þarf að vera jákvæð heiltala')
 });
-// Schema for creating a question with answers
 export const questionWithAnswersSchema = questionSchema.extend({
     answers: z
         .array(answerSchema)

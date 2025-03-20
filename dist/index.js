@@ -40,20 +40,23 @@ const serveStaticFile = (filePath, c) => {
         return c.body('Internal server error', 500);
     }
 };
-app.use('/*', cors());
-app.get('/static/*', (c) => {
-    const url = new URL(c.req.url);
-    const filePath = path.join(__dirname, 'public', url.pathname.slice(7));
-    return serveStaticFile(filePath, c);
-});
-app.get('/', (c) => {
-    const indexFile = path.join(__dirname, 'public', 'index.html');
-    return serveStaticFile(indexFile, c);
-});
-app.get('/form', (c) => {
-    const formFile = path.join(__dirname, 'public', 'form.html');
-    return serveStaticFile(formFile, c);
-});
+app.use('/*', cors({
+    origin: ['http://localhost:3000', 'https://vef2-v3-thb0.onrender.com'],
+    credentials: true,
+}));
+/*app.get('/static/*', (c) => {
+  const url = new URL(c.req.url);
+  const filePath = path.join(__dirname, 'public', url.pathname.slice(7));
+  return serveStaticFile(filePath, c);
+});*/
+/*app.get('/', (c) => {
+  const indexFile = path.join(__dirname, 'public', 'index.html');
+  return serveStaticFile(indexFile, c);
+});*/
+/*app.get('/form', (c) => {
+  const formFile = path.join(__dirname, 'public', 'form.html');
+  return serveStaticFile(formFile, c);
+});*/
 app.get('/categories', (c) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const categories = yield prisma.category.findMany();
@@ -64,108 +67,35 @@ app.get('/categories', (c) => __awaiter(void 0, void 0, void 0, function* () {
         return c.body('Internal server error', 500);
     }
 }));
-app.get('/categories/:slug', (c) => {
-    const { slug } = c.req.param();
+app.get('/categories/:slug', (c) => __awaiter(void 0, void 0, void 0, function* () {
     const formFile = path.join(__dirname, 'public', 'questions.html');
     return serveStaticFile(formFile, c);
-});
-/*app.get('/categories/:slug', async (c) => {
-  const { slug } = c.req.param();
-
-  try {
-    const category = await prisma.category.findUnique({
-      where: {
-        slug: slug,
-      },
-      include: {
-        questions: {
-          include: {
-            answers: true,
-          },
-        },
-      },
-    });
-
-    if (!category) {
-      return c.body('Category not found', 404);
+}));
+app.get('/api/categories/:slug', (c) => __awaiter(void 0, void 0, void 0, function* () {
+    const { slug } = c.req.param();
+    try {
+        const category = yield prisma.category.findUnique({
+            where: {
+                slug: slug,
+            },
+            include: {
+                questions: {
+                    include: {
+                        answers: true,
+                    },
+                },
+            },
+        });
+        if (!category) {
+            return c.body('Category not found', 404);
+        }
+        return c.json(category);
     }
-
-    return c.json(category);
-  } catch (error) {
-    console.error('Error fetching category data:', error);
-    return c.body('Internal server error', 500);
-  }
-});*/
-/*app.get('/categories/:slug', async (c) => {
-  const { slug } = c.req.param();
-  try {
-    const category = await prisma.category.findUnique({
-      where: {
-        slug: slug,
-      },
-      include: {
-        questions: {
-          include: {
-            answers: true,
-          },
-        },
-      },
-    });
-
-    if (!category) {
-      return c.body('Category not found', 404);
+    catch (error) {
+        console.error('Error fetching category data:', error);
+        return c.body('Internal server error', 500);
     }
-
-    // Now we render the HTML dynamically with the category data
-    let html = `
-    <html lang="is">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${category.name}</title>
-        <link rel="stylesheet" href="/static/styles.css">
-    </head>
-    <body>
-        <h1>${category.name}</h1>
-        <div class="category-questions">
-    `;
-
-    // Iterate through the questions and answers to generate HTML content
-    category.questions.forEach((question) => {
-      html += `
-        <div class="question-answer-pair">
-            <p><strong>Q: ${question.questionText}</strong></p>
-            <ul>
-      `;
-
-      question.answers.forEach((answer) => {
-        html += `
-          <li>${answer.answer} ${answer.isCorrect ? '<span class="checkmark">(Correct)</span>' : ''}</li>
-        `;
-      });
-
-      html += `
-            </ul>
-        </div>
-      `;
-    });
-
-    // Close the remaining HTML structure
-    html += `
-        </div>
-        <div class="question-button-menu">
-            <a href="/form" class="add-question-button">Bæta við spurningu</a>
-        </div>
-    </body>
-    </html>
-    `;
-
-    return c.body(html);
-  } catch (error) {
-    console.error('Error fetching category data:', error);
-    return c.body('Internal server error', 500);
-  }
-});*/
+}));
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
 serve({
