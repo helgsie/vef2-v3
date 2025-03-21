@@ -48,7 +48,7 @@ categoryRoutes.get('/:slug', async (c) => {
   }
 });
 
-// POST /category - Create a new category
+// POST /categories - Create a new category
 categoryRoutes.post('/', zValidator('json', categorySchema), async (c) => {
   const body = await c.req.json();
   

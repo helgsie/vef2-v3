@@ -5,7 +5,7 @@ import xss from 'xss';
 const sanitizeString = (value: string): string => xss(value);
 
 export const categorySchema = z.object({
-  title: z
+  name: z
     .string()
     .min(3, 'Flokkur þarf að vera 3 eða fleiri stafir að lengd')
     .max(256, "Flokkur má ekki vera lengri en 256 stafir")
