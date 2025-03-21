@@ -12,7 +12,14 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { prisma } from '../index.js';
 import { categorySchema } from '../validation/schemas.js';
+import { cors } from 'hono/cors';
 export const categoryRoutes = new Hono();
+categoryRoutes.use(cors({
+    origin: ['http://localhost:3000', 'https://vef2-v4-gjvc.onrender.com'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+}));
 // GET /categories - Get all categories
 categoryRoutes.get('/', (c) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -42,7 +49,7 @@ categoryRoutes.get('/:slug', (c) => __awaiter(void 0, void 0, void 0, function* 
         return c.json({ error: 'Internal server error' }, 500);
     }
 }));
-// POST /category - Create a new category
+// POST /categories - Create a new category
 categoryRoutes.post('/', zValidator('json', categorySchema), (c) => __awaiter(void 0, void 0, void 0, function* () {
     const body = yield c.req.json();
     try {
@@ -110,7 +117,7 @@ categoryRoutes.delete('/:slug', (c) => __awaiter(void 0, void 0, void 0, functio
         yield prisma.category.delete({
             where: { slug }
         });
-        return c.body(null, 204);
+        return c.newResponse("", { status: 204 });
     }
     catch (error) {
         console.error(`Error deleting category ${slug}:`, error);

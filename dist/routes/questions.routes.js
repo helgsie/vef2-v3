@@ -12,7 +12,14 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { prisma } from '../index.js';
 import { questionSchema, questionWithAnswersSchema, answerSchema } from '../validation/schemas.js';
+import { cors } from 'hono/cors';
 export const questionRoutes = new Hono();
+questionRoutes.use(cors({
+    origin: ['http://localhost:3000', 'https://vef2-v4-gjvc.onrender.com'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+}));
 // GET /questions - Sækja allar spurningar
 questionRoutes.get('/', (c) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -26,7 +33,7 @@ questionRoutes.get('/', (c) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.error('Error fetching questions:', error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));
 // GET /questions/:id - Sækja ákveðna spurningu
@@ -50,7 +57,7 @@ questionRoutes.get('/:id', (c) => __awaiter(void 0, void 0, void 0, function* ()
     }
     catch (error) {
         console.error(`Error fetching question ${id}:`, error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));
 // POST /questions - Búa til nýja spurningu með svör
@@ -86,7 +93,7 @@ questionRoutes.post('/', zValidator('json', questionWithAnswersSchema), (c) => _
     }
     catch (error) {
         console.error('Error creating question:', error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));
 // PATCH /questions/:id - Uppfæra spurningu
@@ -125,7 +132,7 @@ questionRoutes.patch('/:id', zValidator('json', questionSchema.partial()), (c) =
     }
     catch (error) {
         console.error(`Error updating question ${id}:`, error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));
 // DELETE /questions/:id - Eyða spurningu
@@ -146,11 +153,11 @@ questionRoutes.delete('/:id', (c) => __awaiter(void 0, void 0, void 0, function*
         yield prisma.question.delete({
             where: { id }
         });
-        return c.body(null, 204);
+        return c.newResponse("", { status: 204 });
     }
     catch (error) {
         console.error(`Error deleting question ${id}:`, error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));
 // POST /questions/:id/answers - Add an answer to a question
@@ -179,6 +186,6 @@ questionRoutes.post('/:id/answers', zValidator('json', answerSchema), (c) => __a
     }
     catch (error) {
         console.error(`Error creating answer for question ${questionId}:`, error);
-        throw error;
+        return c.json({ error: 'Internal server error' }, 500);
     }
 }));

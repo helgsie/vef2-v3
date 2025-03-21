@@ -6,14 +6,18 @@ export function sanitizeInput(input: string): string {
 
 export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
   const sanitized = { ...obj };
-  
+
   for (const key in sanitized) {
     if (typeof sanitized[key] === 'string') {
       sanitized[key] = sanitizeInput(sanitized[key]) as any;
+    } else if (Array.isArray(sanitized[key])) {
+      sanitized[key] = sanitized[key].map((item: string) =>
+        typeof item === 'string' ? sanitizeInput(item) : item
+      );
     } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
       sanitized[key] = sanitizeObject(sanitized[key]);
     }
   }
-  
+
   return sanitized;
 }
