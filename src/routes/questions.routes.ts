@@ -4,8 +4,18 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { prisma } from '../index.js';
 import { questionSchema, questionWithAnswersSchema, answerSchema } from '../validation/schemas.js';
+import { cors } from 'hono/cors';
 
 export const questionRoutes = new Hono();
+
+questionRoutes.use(
+  cors({
+    origin: ['http://localhost:3000', 'https://vef2-v4-gjvc.onrender.com'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  })
+);
 
 type Answer = z.infer<typeof answerSchema>;
 

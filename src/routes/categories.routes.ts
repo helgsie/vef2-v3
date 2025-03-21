@@ -3,8 +3,18 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { prisma } from '../index.js';
 import { categorySchema } from '../validation/schemas.js';
+import { cors } from 'hono/cors';
 
 export const categoryRoutes = new Hono();
+
+categoryRoutes.use(
+  cors({
+    origin: ['http://localhost:3000', 'https://vef2-v4-gjvc.onrender.com'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  })
+);
 
 // GET /categories - Get all categories
 categoryRoutes.get('/', async (c) => {
