@@ -130,7 +130,7 @@ categoryRoutes.delete('/:slug', async (c) => {
       where: { slug }
     });
     
-    return c.body(null, 204);
+    return c.newResponse("", { status: 204 });
   } catch (error) {
     console.error(`Error deleting category ${slug}:`, error);
     return c.json({ error: 'Internal server error' }, 500);

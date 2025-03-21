@@ -31,7 +31,7 @@ questionRoutes.get('/', async (c) => {
     return c.json(questions, 200);
   } catch (error) {
     console.error('Error fetching questions:', error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
@@ -59,7 +59,7 @@ questionRoutes.get('/:id', async (c) => {
     return c.json(question, 200);
   } catch (error) {
     console.error(`Error fetching question ${id}:`, error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
@@ -108,7 +108,7 @@ questionRoutes.post('/', zValidator('json', questionWithAnswersSchema), async (c
     return c.json(newQuestion, 200);
   } catch (error) {
     console.error('Error creating question:', error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
@@ -155,7 +155,7 @@ questionRoutes.patch('/:id', zValidator('json', questionSchema.partial()), async
     return c.json(updatedQuestion, 200);
   } catch (error) {
     console.error(`Error updating question ${id}:`, error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
@@ -182,10 +182,10 @@ questionRoutes.delete('/:id', async (c) => {
       where: { id }
     });
     
-    return c.body(null, 204);
+    return c.newResponse("", { status: 204 });
   } catch (error) {
     console.error(`Error deleting question ${id}:`, error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
 
@@ -220,6 +220,6 @@ questionRoutes.post('/:id/answers', zValidator('json', answerSchema), async (c) 
     return c.json(newAnswer, 200);
   } catch (error) {
     console.error(`Error creating answer for question ${questionId}:`, error);
-    throw error;
+    return c.json({ error: 'Internal server error' }, 500);
   }
 });
