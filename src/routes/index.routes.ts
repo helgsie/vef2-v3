@@ -8,7 +8,7 @@ export const api = new Hono();
 api.use(
   cors({
     origin: ['http://localhost:3000', 'https://vef2-v4-gjvc.onrender.com'],
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   })

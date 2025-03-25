@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const prisma = new PrismaClient();
 
-// Function to create a slug from a title
+// Býr til slug út frá titli
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -13,7 +13,7 @@ function slugify(text: string): string {
     .replace(/ +/g, '-');
 }
 
-// Zod Schemas for validation
+// Zod Schema fyrir staðfestingu
 const answerSchema = z.object({
   answer: z.string(),
   correct: z.boolean(),
@@ -77,10 +77,10 @@ async function main() {
       continue;
     }
 
-    // Generate a slug for the category
+    // Búa til slug fyrir flokk
     const slug = slugify(title);
 
-    // Insert category into database, or update if it already exists
+    // Bæta flokki við í gagnagrunn, eða uppfæra hann ef hann er þegar til
     const category = await prisma.category.upsert({
       where: { slug },
       update: { name: title },

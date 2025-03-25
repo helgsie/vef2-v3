@@ -1,4 +1,3 @@
-// src/routes/categories.ts
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { prisma } from '../index.js';
@@ -16,7 +15,7 @@ categoryRoutes.use(
   })
 );
 
-// GET /categories - Get all categories
+// GET /categories - Sækja alla flokka
 categoryRoutes.get('/', async (c) => {
   try {
     const categories = await prisma.category.findMany();
@@ -27,7 +26,7 @@ categoryRoutes.get('/', async (c) => {
   }
 });
 
-// GET /categories/:slug - Get a specific category with its questions
+// GET /categories/:slug - Sækja ákveðinn flokk með spurningum flokks
 categoryRoutes.get('/:slug', async (c) => {
   const slug = c.req.param('slug');
   
@@ -48,12 +47,12 @@ categoryRoutes.get('/:slug', async (c) => {
   }
 });
 
-// POST /categories - Create a new category
+// POST /categories - Búa til flokk
 categoryRoutes.post('/', zValidator('json', categorySchema), async (c) => {
   const body = await c.req.json();
   
   try {
-    // Check if a category with the same slug already exists
+    // Athuga hvort flokkur með sama slug sé til
     const existingCategory = await prisma.category.findUnique({
       where: { slug: body.slug }
     });
@@ -73,13 +72,13 @@ categoryRoutes.post('/', zValidator('json', categorySchema), async (c) => {
   }
 });
 
-// PATCH /category/:slug - Update a category
+// PATCH /category/:slug - Uppfæra flokk
 categoryRoutes.patch('/:slug', zValidator('json', categorySchema.partial()), async (c) => {
   const slug = c.req.param('slug');
   const body = await c.req.json();
   
   try {
-    // Check if the category exists
+    // Athuga hvort flokkur sé til
     const existingCategory = await prisma.category.findUnique({
       where: { slug }
     });
@@ -88,7 +87,7 @@ categoryRoutes.patch('/:slug', zValidator('json', categorySchema.partial()), asy
       return c.json({ error: 'Category not found' }, 404);
     }
     
-    // If we're updating the slug, check that the new slug doesn't already exist
+    // Ef við breytum slug, passa að slug sé ekki nú þegar í notkun
     if (body.slug && body.slug !== slug) {
       const categoryWithNewSlug = await prisma.category.findUnique({
         where: { slug: body.slug }
@@ -111,12 +110,12 @@ categoryRoutes.patch('/:slug', zValidator('json', categorySchema.partial()), asy
   }
 });
 
-// DELETE /category/:slug - Delete a category
+// DELETE /category/:slug - Eyða flokki
 categoryRoutes.delete('/:slug', async (c) => {
   const slug = c.req.param('slug');
   
   try {
-    // Check if the category exists
+    // Athuga hvort flokkur sé til
     const existingCategory = await prisma.category.findUnique({
       where: { slug }
     });
@@ -125,7 +124,7 @@ categoryRoutes.delete('/:slug', async (c) => {
       return c.json({ error: 'Category not found' }, 404);
     }
     
-    // Delete the category
+    // Eyða flokki
     await prisma.category.delete({
       where: { slug }
     });

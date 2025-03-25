@@ -1,4 +1,3 @@
-// src/routes/questions.ts
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
@@ -77,7 +76,7 @@ questionRoutes.post('/', zValidator('json', questionWithAnswersSchema), async (c
       return c.json({ error: 'Category not found' }, 400);
     }
     
-    // Create question and answers in a transaction
+    // Nota transaction til að búa til spurningu og svör
     const newQuestion = await prisma.$transaction(async (tx) => {
       const question = await tx.question.create({
         data: {
@@ -123,7 +122,7 @@ questionRoutes.patch('/:id', zValidator('json', questionSchema.partial()), async
   const body = await c.req.json();
   
   try {
-    // Check if the question exists
+    // Athuga hvort spurningin sé til
     const existingQuestion = await prisma.question.findUnique({
       where: { id }
     });
@@ -132,7 +131,7 @@ questionRoutes.patch('/:id', zValidator('json', questionSchema.partial()), async
       return c.json({ error: 'Question not found' }, 404);
     }
     
-    // If updating the category, check that it exists
+    // Ef við uppfærum flokkinn, athuga hvort hann sé þegar til
     if (body.categoryId) {
       const category = await prisma.category.findUnique({
         where: { id: body.categoryId }
@@ -168,7 +167,7 @@ questionRoutes.delete('/:id', async (c) => {
   }
   
   try {
-    // Check if the question exists
+    // Athuga hvort spurning sé til
     const existingQuestion = await prisma.question.findUnique({
       where: { id }
     });
@@ -177,7 +176,7 @@ questionRoutes.delete('/:id', async (c) => {
       return c.json({ error: 'Question not found' }, 404);
     }
     
-    // Delete the question (answers will be deleted due to cascade delete)
+    // Eyða spurningu (svör eyðast líka vegna cascade delete)
     await prisma.question.delete({
       where: { id }
     });
@@ -189,7 +188,7 @@ questionRoutes.delete('/:id', async (c) => {
   }
 });
 
-// POST /questions/:id/answers - Add an answer to a question
+// POST /questions/:id/answers - Bæta svari við spurningu
 questionRoutes.post('/:id/answers', zValidator('json', answerSchema), async (c) => {
   const questionId = parseInt(c.req.param('id'), 10);
   
@@ -200,7 +199,7 @@ questionRoutes.post('/:id/answers', zValidator('json', answerSchema), async (c) 
   const body = await c.req.json();
   
   try {
-    // Check if the question exists
+    // Athuga hvort spurning sé til
     const question = await prisma.question.findUnique({
       where: { id: questionId }
     });
