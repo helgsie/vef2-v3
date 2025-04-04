@@ -10,9 +10,8 @@ export const prisma = new PrismaClient();
 export const app = new Hono();
 app.use(cors({
     origin: ['http://localhost:3000', 'https://vef2-v4-gjvc.onrender.com'],
-    allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
 }));
 app.use(prettyJSON());
 app.route('/', api);

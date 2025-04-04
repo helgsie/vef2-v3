@@ -1,4 +1,3 @@
-// src/tests/api.test.ts
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { app } from '../src/index';
 import { PrismaClient } from '@prisma/client';
@@ -7,46 +6,44 @@ const prisma = new PrismaClient();
 
 describe('Category API', () => {
   const testCategory = {
-    name: 'Test Category',
-    slug: 'test-category'
+    name: 'Prufuflokkur',
+    slug: 'prufuflokkur'
   };
 
   beforeAll(async () => {
-    // Clean up test data
     await prisma.category.deleteMany({
       where: { slug: testCategory.slug }
     });
   });
 
   afterAll(async () => {
-    // Clean up test data
     await prisma.category.deleteMany({
       where: { slug: testCategory.slug }
     });
     await prisma.$disconnect();
   });
 
-  it('should create a category', async () => {
-    const res = await app.request('/category', {
+  it('ætti að búa til flokk', async () => {
+    const res = await app.request('/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(testCategory)
     });
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     const data = await res.json();
     expect(data.name).toBe(testCategory.name);
     expect(data.slug).toBe(testCategory.slug);
   });
 
-  it('should get all categories', async () => {
+  it('ætti að sækja alla flokka', async () => {
     const res = await app.request('/categories');
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(Array.isArray(data)).toBe(true);
   });
 
-  it('should get a specific category', async () => {
+  it('ætti að sækja ákveðinn flokk', async () => {
     const res = await app.request(`/categories/${testCategory.slug}`);
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -54,9 +51,9 @@ describe('Category API', () => {
     expect(data.slug).toBe(testCategory.slug);
   });
 
-  it('should update a category', async () => {
-    const updatedName = 'Updated Test Category';
-    const res = await app.request(`/category/${testCategory.slug}`, {
+  it('ætti að breyta flokki', async () => {
+    const updatedName = 'Breyttur prufuflokkur';
+    const res = await app.request(`/categories/${testCategory.slug}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: updatedName })
@@ -77,33 +74,32 @@ describe('Question API', () => {
     // Create a test category
     const category = await prisma.category.create({
       data: {
-        name: 'Test Question Category',
-        slug: 'test-question-category'
+        name: 'Prufuflokkur með spurningum',
+        slug: 'prufuflokkur-med-spurningum'
       }
     });
     categoryId = category.id;
   });
 
   afterAll(async () => {
-    // Clean up test data
     try {
       await prisma.category.delete({
         where: { id: categoryId }
       });
     } catch (error) {
-      console.log('Category already deleted or not found');
+      console.log('Flokkur ekki til eða þegar búið að eyða');
     }
     await prisma.$disconnect();
   });
 
-  it('should create a question with answers', async () => {
+  it('ætti að búa til spurningu með svörum', async () => {
     const testQuestion = {
-      questionText: 'What is the capital of France?',
+      questionText: 'Hver er höfuðborg Frakklands?',
       categoryId,
       answers: [
-        { answer: 'Paris', isCorrect: true },
+        { answer: 'París', isCorrect: true },
         { answer: 'London', isCorrect: false },
-        { answer: 'Berlin', isCorrect: false }
+        { answer: 'Berlín', isCorrect: false }
       ]
     };
 
@@ -120,26 +116,26 @@ describe('Question API', () => {
     questionId = data.id;
   });
 
-  it('should get all questions', async () => {
+  it('ætti að sækja allar spurningar', async () => {
     const res = await app.request('/questions');
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(Array.isArray(data)).toBe(true);
   });
 
-  it('should get a specific question', async () => {
+  it('ætti að sækja ákveðna spurningu', async () => {
     const res = await app.request(`/questions/${questionId}`);
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.id).toBe(questionId);
-    expect(data.questionText).toBe('What is the capital of France?');
+    expect(data.questionText).toBe('Hver er höfuðborg Frakklands?');
     expect(Array.isArray(data.answers)).toBe(true);
     expect(data.answers.length).toBe(3);
   });
 
-  it('should add an answer to a question', async () => {
+  it('ætti að bæta svarmöguleika við spurningu', async () => {
     const testAnswer = {
-      answer: 'Madrid',
+      answer: 'Madríd',
       isCorrect: false
     };
 

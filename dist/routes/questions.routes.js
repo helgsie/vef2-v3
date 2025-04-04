@@ -7,7 +7,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// src/routes/questions.ts
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { prisma } from '../index.js';
@@ -71,7 +70,7 @@ questionRoutes.post('/', zValidator('json', questionWithAnswersSchema), (c) => _
         if (!category) {
             return c.json({ error: 'Category not found' }, 400);
         }
-        // Create question and answers in a transaction
+        // Nota transaction til að búa til spurningu og svör
         const newQuestion = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             const question = yield tx.question.create({
                 data: {
@@ -104,14 +103,14 @@ questionRoutes.patch('/:id', zValidator('json', questionSchema.partial()), (c) =
     }
     const body = yield c.req.json();
     try {
-        // Check if the question exists
+        // Athuga hvort spurningin sé til
         const existingQuestion = yield prisma.question.findUnique({
             where: { id }
         });
         if (!existingQuestion) {
             return c.json({ error: 'Question not found' }, 404);
         }
-        // If updating the category, check that it exists
+        // Ef við uppfærum flokkinn, athuga hvort hann sé þegar til
         if (body.categoryId) {
             const category = yield prisma.category.findUnique({
                 where: { id: body.categoryId }
@@ -142,14 +141,14 @@ questionRoutes.delete('/:id', (c) => __awaiter(void 0, void 0, void 0, function*
         return c.json({ error: 'Invalid question ID' }, 400);
     }
     try {
-        // Check if the question exists
+        // Athuga hvort spurning sé til
         const existingQuestion = yield prisma.question.findUnique({
             where: { id }
         });
         if (!existingQuestion) {
             return c.json({ error: 'Question not found' }, 404);
         }
-        // Delete the question (answers will be deleted due to cascade delete)
+        // Eyða spurningu (svör eyðast líka vegna cascade delete)
         yield prisma.question.delete({
             where: { id }
         });
@@ -160,7 +159,7 @@ questionRoutes.delete('/:id', (c) => __awaiter(void 0, void 0, void 0, function*
         return c.json({ error: 'Internal server error' }, 500);
     }
 }));
-// POST /questions/:id/answers - Add an answer to a question
+// POST /questions/:id/answers - Bæta svari við spurningu
 questionRoutes.post('/:id/answers', zValidator('json', answerSchema), (c) => __awaiter(void 0, void 0, void 0, function* () {
     const questionId = parseInt(c.req.param('id'), 10);
     if (isNaN(questionId)) {
@@ -168,7 +167,7 @@ questionRoutes.post('/:id/answers', zValidator('json', answerSchema), (c) => __a
     }
     const body = yield c.req.json();
     try {
-        // Check if the question exists
+        // Athuga hvort spurning sé til
         const question = yield prisma.question.findUnique({
             where: { id: questionId }
         });

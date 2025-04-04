@@ -7,7 +7,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// src/routes/categories.ts
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { prisma } from '../index.js';
@@ -20,7 +19,7 @@ categoryRoutes.use(cors({
     allowHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
 }));
-// GET /categories - Get all categories
+// GET /categories - Sækja alla flokka
 categoryRoutes.get('/', (c) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const categories = yield prisma.category.findMany();
@@ -31,7 +30,7 @@ categoryRoutes.get('/', (c) => __awaiter(void 0, void 0, void 0, function* () {
         return c.json({ error: 'Internal server error' }, 500);
     }
 }));
-// GET /categories/:slug - Get a specific category with its questions
+// GET /categories/:slug - Sækja ákveðinn flokk með spurningum flokks
 categoryRoutes.get('/:slug', (c) => __awaiter(void 0, void 0, void 0, function* () {
     const slug = c.req.param('slug');
     try {
@@ -49,11 +48,11 @@ categoryRoutes.get('/:slug', (c) => __awaiter(void 0, void 0, void 0, function* 
         return c.json({ error: 'Internal server error' }, 500);
     }
 }));
-// POST /categories - Create a new category
+// POST /categories - Búa til flokk
 categoryRoutes.post('/', zValidator('json', categorySchema), (c) => __awaiter(void 0, void 0, void 0, function* () {
     const body = yield c.req.json();
     try {
-        // Check if a category with the same slug already exists
+        // Athuga hvort flokkur með sama slug sé til
         const existingCategory = yield prisma.category.findUnique({
             where: { slug: body.slug }
         });
@@ -70,19 +69,19 @@ categoryRoutes.post('/', zValidator('json', categorySchema), (c) => __awaiter(vo
         return c.json({ error: 'Internal server error' }, 500);
     }
 }));
-// PATCH /category/:slug - Update a category
+// PATCH /category/:slug - Uppfæra flokk
 categoryRoutes.patch('/:slug', zValidator('json', categorySchema.partial()), (c) => __awaiter(void 0, void 0, void 0, function* () {
     const slug = c.req.param('slug');
     const body = yield c.req.json();
     try {
-        // Check if the category exists
+        // Athuga hvort flokkur sé til
         const existingCategory = yield prisma.category.findUnique({
             where: { slug }
         });
         if (!existingCategory) {
             return c.json({ error: 'Category not found' }, 404);
         }
-        // If we're updating the slug, check that the new slug doesn't already exist
+        // Ef við breytum slug, passa að slug sé ekki nú þegar í notkun
         if (body.slug && body.slug !== slug) {
             const categoryWithNewSlug = yield prisma.category.findUnique({
                 where: { slug: body.slug }
@@ -102,18 +101,18 @@ categoryRoutes.patch('/:slug', zValidator('json', categorySchema.partial()), (c)
         return c.json({ error: 'Internal server error' }, 500);
     }
 }));
-// DELETE /category/:slug - Delete a category
+// DELETE /category/:slug - Eyða flokki
 categoryRoutes.delete('/:slug', (c) => __awaiter(void 0, void 0, void 0, function* () {
     const slug = c.req.param('slug');
     try {
-        // Check if the category exists
+        // Athuga hvort flokkur sé til
         const existingCategory = yield prisma.category.findUnique({
             where: { slug }
         });
         if (!existingCategory) {
             return c.json({ error: 'Category not found' }, 404);
         }
-        // Delete the category
+        // Eyða flokki
         yield prisma.category.delete({
             where: { slug }
         });

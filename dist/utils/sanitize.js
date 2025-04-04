@@ -8,6 +8,9 @@ export function sanitizeObject(obj) {
         if (typeof sanitized[key] === 'string') {
             sanitized[key] = sanitizeInput(sanitized[key]);
         }
+        else if (Array.isArray(sanitized[key])) {
+            sanitized[key] = sanitized[key].map((item) => typeof item === 'string' ? sanitizeInput(item) : item);
+        }
         else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
             sanitized[key] = sanitizeObject(sanitized[key]);
         }
